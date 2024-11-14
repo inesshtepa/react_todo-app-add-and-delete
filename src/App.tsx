@@ -9,6 +9,7 @@ import * as todoService from './api/todos';
 import { FilterOptions } from './types/FilterOptions';
 import { Todolist } from './components/TodoList';
 import { TodoItem } from './components/TodoItem';
+import classNames from 'classnames';
 
 export const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,6 @@ export const App: React.FC = () => {
   const [newTodoTitle, setNewTodoTitle] = useState('');
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [deletingId, setDeletingID] = useState([0]);
-  // const [selectedTodo, setSelectedTodo] = useState(false);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -115,7 +115,7 @@ export const App: React.FC = () => {
     }
   }, [todos, inputRef]);
 
-  function loadTodos() {
+  const loadTodos = () => {
     setLoading(true);
 
     todoService
@@ -127,7 +127,7 @@ export const App: React.FC = () => {
         inputRef.current?.focus();
         setTimeout(() => setErrorMessage(''), 3000);
       });
-  }
+  };
 
   useEffect(loadTodos, []);
 
@@ -153,7 +153,9 @@ export const App: React.FC = () => {
           <header className="todoapp__header">
             <button
               type="button"
-              className={`todoapp__toggle-all ${allCompleted ? 'active' : ''}`}
+              className={classNames('todoapp__toggle-all', {
+                'is-active': allCompleted,
+              })}
               data-cy="ToggleAllButton"
               onClick={completedAllTodos}
             />
@@ -165,77 +167,73 @@ export const App: React.FC = () => {
                 onChange={e => setNewTodoTitle(e.target.value)}
                 data-cy="NewTodoField"
                 type="text"
-                className={`todoapp__new-todo ${inputRef.current?.focus() ? 'focused' : ''}`}
+                className={classNames('todoapp__new-todo', {
+                  focused: inputRef.current?.focus(),
+                })}
                 placeholder="What needs to be done?"
                 disabled={tempTodo !== null}
                 autoFocus
               />
             </form>
           </header>
-        </div>
-        <Todolist
-          todos={filteredTodos}
-          onToggleTodo={toggleTodoCompletion}
-          onDelete={handleDelete}
-          deletingId={deletingId}
-          loading={loading}
-        />
-        {tempTodo && (
-          <TodoItem
-            todo={tempTodo}
+
+          <Todolist
+            todos={filteredTodos}
             onToggleTodo={toggleTodoCompletion}
             onDelete={handleDelete}
             deletingId={deletingId}
             loading={loading}
           />
-        )}
-        {todos.length !== 0 && (
-          <footer className="todoapp__footer" data-cy="Footer">
-            <span className="todo-count" data-cy="TodosCounter">
-              {`${activeTodos} items left`}
-            </span>
+          {tempTodo && (
+            <TodoItem
+              todo={tempTodo}
+              onToggleTodo={toggleTodoCompletion}
+              onDelete={handleDelete}
+              deletingId={deletingId}
+              loading={loading}
+            />
+          )}
+          {todos.length !== 0 && (
+            <footer className="todoapp__footer" data-cy="Footer">
+              <span className="todo-count" data-cy="TodosCounter">
+                {`${activeTodos} items left`}
+              </span>
 
-            <nav className="filter" data-cy="Filter">
-              <a
-                href="#/"
-                className={`filter__link ${currentFilter === FilterOptions.All ? 'selected' : ''}`}
-                data-cy="FilterLinkAll"
-                onClick={() => setCurrentFilter(FilterOptions.All)}
-              >
-                All
-              </a>
-              <a
-                href="#/active"
-                className={`filter__link ${currentFilter === FilterOptions.Active ? 'selected' : ''}`}
-                data-cy="FilterLinkActive"
-                onClick={() => setCurrentFilter(FilterOptions.Active)}
-              >
-                Active
-              </a>
-              <a
-                href="#/completed"
-                className={`filter__link ${currentFilter === FilterOptions.Completed ? 'selected' : ''}`}
-                data-cy="FilterLinkCompleted"
-                onClick={() => setCurrentFilter(FilterOptions.Completed)}
-              >
-                Completed
-              </a>
-            </nav>
+              <nav className="filter" data-cy="Filter">
+                {Object.values(FilterOptions).map(option => (
+                  <a
+                    key={option}
+                    href={`#/${option}`}
+                    className={classNames('filter__link', {
+                      selected: currentFilter === option,
+                    })}
+                    data-cy={`FilterLink${option}`}
+                    onClick={() => setCurrentFilter(option)}
+                  >
+                    {option}
+                  </a>
+                ))}
+              </nav>
 
-            <button
-              type="button"
-              className="todoapp__clear-completed"
-              data-cy="ClearCompletedButton"
-              onClick={() => handleClearCompleted()}
-              disabled={todos.every(todo => !todo.completed) || loading}
-            >
-              Clear completed
-            </button>
-          </footer>
-        )}
+              <button
+                type="button"
+                className="todoapp__clear-completed"
+                data-cy="ClearCompletedButton"
+                onClick={() => handleClearCompleted()}
+                disabled={todos.every(todo => !todo.completed) || loading}
+              >
+                Clear completed
+              </button>
+            </footer>
+          )}
+        </div>
+
         <div
           data-cy="ErrorNotification"
-          className={`notification is-danger is-light has-text-weight-normal ${errorMessage ? '' : 'hidden'}`}
+          className={classNames(
+            'notification is-danger is-light has-text-weight-normal',
+            { hidden: !errorMessage },
+          )}
         >
           <button
             data-cy="HideErrorButton"

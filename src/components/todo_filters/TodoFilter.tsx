@@ -1,3 +1,5 @@
+import { FilterOptions } from '../../types/FilterOptions';
+
 type Props = {
   setFilter: (filter: string) => void;
 };
@@ -11,9 +13,9 @@ export const TodoFilter: React.FC<Props> = ({ setFilter }) => {
             data-cy="statusSelect"
             onChange={element => setFilter(element.target.value)}
           >
-            <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
+            <option value={FilterOptions.All}>All</option>
+            <option value={FilterOptions.Active}>Active</option>
+            <option value={FilterOptions.Completed}>Completed</option>
           </select>
         </span>
       </p>
